@@ -100,5 +100,3 @@ lemma Option.filter_irrel {α : Type} {o : Option α} {p : α → Bool}
   aesop (add simp Option.filter)
 
   variable {α : Type u} {β : Type v}
-
-#min_imports
