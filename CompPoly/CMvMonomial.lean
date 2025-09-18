@@ -3,6 +3,7 @@ import Mathlib.Algebra.Group.Finsupp
 import Mathlib.Algebra.Group.TypeTags.Basic
 import Mathlib.Algebra.GroupWithZero.Nat
 import Mathlib.Algebra.Ring.Defs
+import Mathlib.Data.Finsupp.Multiset
 import Mathlib.Data.Nat.Lattice
 namespace CPoly
 
@@ -37,10 +38,6 @@ def extend (n' : ℕ) (m : CMvMonomial n) : CMvMonomial (max n n') :=
                   rw [sup_of_le_right this, Nat.add_sub_cancel' this]
         this ▸ rfl)
        (m.append (Vector.replicate (n' - n) 0))
-
-def totalDegree (m : CMvMonomial n) : ℕ := m.sum
-
-def degreeOf (m : CMvMonomial n) (i : Fin n) : ℕ := m.get i
 
 def one : CMvMonomial n := Vector.replicate n 0
 
@@ -146,6 +143,23 @@ def evalMonomial {R : Type} {n : ℕ} [CommSemiring R] : (Fin n → R) → CMvMo
   fun vals m => ∏ (i : Fin n), (vals i) ^ m.get i
 
 end MonoR
+
+namespace CMvMonomial
+
+variable [AddCommMonoid M] in
+def weightedTotalDegree (w : Fin n → M) (m : CMvMonomial n) : M :=
+  ∑ i : Fin n, m.get i • w i
+
+def degrees (m : CMvMonomial n) : Multiset (Fin n) :=
+  (CMvMonomial.toFinsupp m).toMultiset
+
+def totalDegree (m : CMvMonomial n) : ℕ :=
+  m.sum
+
+def degreeOf (m : CMvMonomial n) (i : Fin n) : ℕ :=
+  m.get i
+
+end CMvMonomial
 
 end CPoly
 
