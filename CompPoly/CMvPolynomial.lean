@@ -87,15 +87,31 @@ lemma fromUnlawful_fold_eq_fold_fromUnlawful [CommSemiring R] [BEq R] [LawfulBEq
 def eval₂ {R S : Type} {n : ℕ} [Semiring R] [CommSemiring S] : (R →+* S) → (Fin n → S) → CMvPolynomial n R → S :=
   fun f vs p => ExtTreeMap.foldl (fun s m c => (f c * MonoR.evalMonomial vs m) + s) 0 p.1
 
-def eval {R : Type} {n : ℕ} [CommSemiring R] : (Fin n → R) → CMvPolynomial n R → R := eval₂ (RingHom.id _)
+def eval {R : Type} {n : ℕ} [CommSemiring R] : (Fin n → R) → CMvPolynomial n R → R :=
+  eval₂ (RingHom.id _)
 
-def totalDegree {R : Type} {n : ℕ} [inst : CommSemiring R] : CMvPolynomial n R → ℕ :=
-  fun p => Finset.sup (List.toFinset (List.map CMvMonomial.toFinsupp (Lawful.monomials p))) (fun s => Finsupp.sum s (fun _ e => e))
+variable [AddCommMonoid M] [SemilatticeSup M] in
+def weightedTotalDegree' [Zero R] (w : Fin n → M) (p : CMvPolynomial n R) : WithBot M :=
+  Finset.sup p.monomials.toFinset fun m => some (m.weightedTotalDegree w)
 
-def degreeOf {R : Type} {n : ℕ} [CommSemiring R] (i : Fin n) : CMvPolynomial n R → ℕ :=
-  fun p =>
-    Multiset.count i
-    (Finset.sup (List.toFinset (List.map CMvMonomial.toFinsupp (Lawful.monomials p))) fun s => Finsupp.toMultiset s)
+variable [AddCommMonoid M] [SemilatticeSup M] [OrderBot M] in
+def weightedTotalDegree [Zero R] (w : Fin n → M) (p : CMvPolynomial n R) : M :=
+  Finset.sup p.monomials.toFinset fun m => m.weightedTotalDegree w
+
+def degrees [CommSemiring R] (p : CMvPolynomial n R) : Multiset (Fin n) :=
+  Finset.sup p.monomials.toFinset fun m => m.degrees
+
+-- may want to change this definition to use `CMvMonomial.totalDegree`
+-- but this would immediately disrupt `totalDegree_equiv`
+-- preliminary formalizations would be necessary
+def totalDegree [CommSemiring R] (p : CMvPolynomial n R) : ℕ :=
+  Finset.sup (List.toFinset (List.map CMvMonomial.toFinsupp (p.monomials))) fun s => Finsupp.sum s (fun _ e => e)
+
+-- may want to change this definition to use `CMvMonomial.degreeOf`
+-- but this would immediately disrupt `totalDegree_equiv`
+-- preliminary formalizations would be necessary
+def degreeOf [CommSemiring R] (i : Fin n) (p : CMvPolynomial n R) : ℕ :=
+  Multiset.count i (Finset.sup (List.toFinset (List.map CMvMonomial.toFinsupp (Lawful.monomials p))) fun s => Finsupp.toMultiset s)
 
 end CMvPolynomial
 
